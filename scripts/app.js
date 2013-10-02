@@ -1,3 +1,14 @@
+// Intro popup
+var welcome = "<h2>StoryScribe</h2>"
+welcome += "<p>Project to record stories in the field</p>";
+welcome += "<ul>";
+welcome += "<li>Store locally, upload later</li>";
+welcome += "<li>Transcribe into any language</li>";
+welcome += "<li><a href='https://github.com/mapmeld/storyscribe'>Open Source</a> on GitHub</li>";
+welcome += "</ul>";
+welcome += "<a href='#' class='btn' onclick='TINY.box.hide()'>Start &gt;</a>";
+TINY.box.show({ html:welcome,animate:true,close:true,mask:true,boxid:'welcome'});
+
 // Leaflet map
 var map = L.map('map').setView([ 42.334929, -71.017996 ], 16);
 map.attributionControl.setPrefix('');
