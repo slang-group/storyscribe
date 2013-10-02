@@ -64,3 +64,6 @@ audio, video{
   width: 65px;
   font-weight: normal;
 }
+li{
+  margin-bottom: 5px;
+}

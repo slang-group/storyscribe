@@ -22,8 +22,8 @@ function checkTileMill(){
 var welcome = "<h2>StoryScribe</h2>"
 welcome += "<p>Project to record stories in the field</p>";
 welcome += "<ul>";
-welcome += "<li>Click the map to add a point!</li>";
-welcome += "<li>Store locally, upload later</li>";
+welcome += "<li>Click the map to add a point</li>";
+welcome += "<li>Record audio in browser to upload later</li>";
 welcome += "<li>Transcribe into any language</li>";
 welcome += "<li><label><input id='tilemilled' type='checkbox' onchange='checkTileMill()'>TileMill offline (when checked)</label></li>";
 welcome += "<li><a href='https://github.com/mapmeld/storyscribe'>Open Source</a> on GitHub</li>";
@@ -54,11 +54,11 @@ db.allDocs({include_docs: true}, function(err, response){
     var popupContent = response.rows[r].doc.content;
     if(response.rows[r].doc._attachments && response.rows[r].doc._attachments.audio){
       popupContent = "<audio controls='controls' src=''></audio><br/>" + transcribeTxt(popupContent);
-      var audiomark = L.marker(response.rows[r].doc.latlng).bindPopup(popupContent).addTo(map);
+      var audiomark = L.marker(response.rows[r].doc.latlng, { draggable: true }).bindPopup(popupContent).addTo(map);
       bindMarker(audiomark, response.rows[r].doc._id);
     }
     else if(popupContent && popupContent.length){
-      L.marker(response.rows[r].doc.latlng).bindPopup(popupContent).addTo(map);
+      L.marker(response.rows[r].doc.latlng, { draggable: true }).bindPopup(popupContent).addTo(map);
     }
   }
 });
@@ -91,6 +91,12 @@ function bindMarker(marker, docid){
       });
       
     }, 300);
+  })
+  .on('dragend', function(e){
+    db.get(docid, function(err, doc){
+      doc.latlng = [ marker.getLatLng().lat, marker.getLatLng().lng ];
+      db.put(doc);
+    });
   });
 }
 
@@ -105,7 +111,7 @@ var popupTxt = "Record me<br/>";
 popupTxt += "<audio controls='controls'></audio><br/>";
 popupTxt += "<a class='btn savebtn recordbtn' href='#' onclick='toggleRecord()'>Record</a>";
 map.on('click', function(e){
-  activeMarker = L.marker(e.latlng)
+  activeMarker = L.marker(e.latlng, { draggable: true })
     .bindPopup(popupTxt)
     .addTo(map)
     .openPopup();
@@ -134,7 +140,7 @@ function toggleRecord(){
           console.log( err || response );
           
           var popupContent = "<audio controls='controls' src=''></audio><br/>" + transcribeTxt('');
-          var audiomark = L.marker(saveMarker.latlng).bindPopup(popupContent).addTo(map);
+          var audiomark = L.marker(saveMarker.latlng, { draggable: true }).bindPopup(popupContent).addTo(map);
           bindMarker(audiomark, response.id);
           
           map.removeLayer(activeMarker);
@@ -180,7 +186,7 @@ function saveText(){
     db.put(doc);
     
     var popupContent = "<audio controls='controls' src=''></audio><br/>" + transcribeTxt(textContent);
-    var audiomark = L.marker(activeMarker.getLatLng()).bindPopup(popupContent).addTo(map);
+    var audiomark = L.marker(activeMarker.getLatLng(), { draggable: true }).bindPopup(popupContent).addTo(map);
     bindMarker(audiomark, doc["_id"]);
     
     map.removeLayer(activeMarker);
