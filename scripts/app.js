@@ -23,7 +23,7 @@ var activeMarker = null;
 var interviewMarkers = [ ];
 map.on('click', function(e){
   activeMarker = L.marker(e.latlng).addTo(map);
-  activeMarker.bindPopup("Transcribe me<br/><textarea id='notes' rows='8' cols='30'></textarea>");
+  activeMarker.bindPopup("Transcribe me<br/><textarea id='notes' rows='8' cols='30'></textarea><br/><br/>");
   activeMarker.openPopup();
   $("#notes").ime();
   

@@ -1,8 +1,9 @@
 html, body, #map{
   padding: 0;
   margin: 0;
-  font-family: sans-serif;
   height: 100%;
   width: 100%;
   overflow: hidden;
+  font-family: sans-serif;
+  font-size: 11pt;
 }
