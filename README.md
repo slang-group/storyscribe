@@ -24,7 +24,3 @@ A better tool to record and map field interviews
 
 * Transcription mode pauses playback while typing
 * Using WikiMedia's <a href="https://github.com/wikimedia/jquery.ime">jQuery.IME</a> for input in many languages
-
-## Current status
-
-Mapping markers. Storing and recovering text in multiple languages in PouchDB.

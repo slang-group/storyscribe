@@ -1,9 +1,30 @@
+// TileMill settings for offline maps
+var TileMillProjectName = "MarshallIslands";
+var tilemillLayer = null;
+function checkTileMill(){
+  if($("#tilemilled")[0].checked){
+    if(TileMillProjectName == "MarshallIslands"){
+      alert("Change the 2nd line of scripts/app.js to the name of your local TileMill project");
+    }
+    if(!tilemillLayer){
+      tilemillLayer = L.tileLayer('http://localhost:20008/tile/' + TileMillProjectName + '/{z}/{x}/{y}.png', {maxZoom: 18, attribution: ""}).addTo(map);
+    }
+    map.removeLayer(terrainLayer);
+    tilemillLayer.addTo(map);
+  }
+  else if(!$("#tilemilled")[0].checked){
+    map.removeLayer(tilemillLayer);
+    terrainLayer.addTo(map);
+  }
+}
+
 // Intro popup
 var welcome = "<h2>StoryScribe</h2>"
 welcome += "<p>Project to record stories in the field</p>";
 welcome += "<ul>";
 welcome += "<li>Store locally, upload later</li>";
 welcome += "<li>Transcribe into any language</li>";
+welcome += "<li><label><input id='tilemilled' type='checkbox' onchange='checkTileMill()'>TileMill offline (when checked)</label></li>";
 welcome += "<li><a href='https://github.com/mapmeld/storyscribe'>Open Source</a> on GitHub</li>";
 welcome += "</ul>";
 welcome += "<a href='#' class='btn' onclick='TINY.box.hide()'>Start &gt;</a>";
@@ -20,7 +41,7 @@ map.attributionControl.setPrefix('');
 // basemap
 var terrain = 'http://{s}.tiles.mapbox.com/v3/mapmeld.map-ofpv1ci4/{z}/{x}/{y}.png';
 var terrainAttrib = 'Map data &copy; 2013 OpenStreetMap contributors, Tiles &copy; 2013 MapBox';
-L.tileLayer(terrain, {maxZoom: 18, attribution: terrainAttrib}).addTo(map);
+var terrainLayer = L.tileLayer(terrain, {maxZoom: 18, attribution: terrainAttrib}).addTo(map);
 
 // set up PouchDB / retrieve any data
 var db = new PouchDB("recordings");
