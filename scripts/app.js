@@ -31,19 +31,20 @@ db.allDocs({include_docs: true}, function(err, response){
   for(var r=0;r<response.rows.length;r++){
     var popupContent = response.rows[r].doc.content;
     if(response.rows[r].doc._attachments && response.rows[r].doc._attachments.audio){
-      popupContent += "<audio controls='controls' src=''></audio><br/>";
+      popupContent = "<audio controls='controls' src=''></audio><br/>" + transcribeTxt(popupContent);
       var audiomark = L.marker(response.rows[r].doc.latlng).bindPopup(popupContent).addTo(map);
       bindMarker(audiomark, response.rows[r].doc._id);
     }
-    else{
+    else if(popupContent && popupContent.length){
       L.marker(response.rows[r].doc.latlng).bindPopup(popupContent).addTo(map);
     }
   }
 });
 
 function bindMarker(marker, docid){
-  console.log(docid);
   marker.on('click', function(e){
+    activeMarker = marker;
+    activeMarkerId = docid;
     db.getAttachment(docid, 'audio', function(err, blob){
       $("audio")[0].src = window.URL.createObjectURL(blob);
     });
@@ -52,6 +53,7 @@ function bindMarker(marker, docid){
 
 // click to place marker
 var activeMarker = null;
+var activeMarkerId = null;
 var interviewMarkers = [ ];
 var mainstream = null;
 var recorder = null;
@@ -84,11 +86,19 @@ function toggleRecord(){
         if(err){
           return console.log(err);
         }
-        console.log(response.id);
+        //console.log(response.id);
         db.putAttachment(response.id, 'audio', response.rev, wavaudio, 'audio/wav', function(err, response){
           console.log( err || response );
+          
+          var popupContent = "<audio controls='controls' src=''></audio><br/>" + transcribeTxt('');
+          var audiomark = L.marker(saveMarker.latlng).bindPopup(popupContent).addTo(map);
+          bindMarker(audiomark, response.id);
+          
+          map.removeLayer(activeMarker);
+          activeMarker = null;
         });
       });
+      
     });
   }
   else{
@@ -113,28 +123,24 @@ function toggleRecord(){
   }
 }
 
-var transcribeTxt = "Transcribe me<br/>";
-transcribeTxt += "<textarea id='notes' rows='8' cols='30'></textarea><br/><br/>"
-transcribeTxt += "<a class='btn savebtn' href='#' onclick='saveText()'>Save</a>";
+function transcribeTxt(content){
+  var mytxt = "Transcribe me<br/>";
+  mytxt += "<textarea id='notes' rows='8' cols='30'>" + content + "</textarea><br/><br/>"
+  mytxt += "<a class='btn savebtn' href='#' onclick='saveText()'>Save</a>";
+  return mytxt;
+}
 
 function saveText(){
   var textContent = $("#notes").val();
-/*
-  db.post({
-    latlng: [activeMarker.getLatLng().lat, activeMarker.getLatLng().lng],
-    content: textContent
-  }, function(err, response){
-    console.log(err || response);
+  db.get(activeMarkerId, function(err, doc){
+    doc.content = textContent;
+    db.put(doc);
+    
+    var popupContent = "<audio controls='controls' src=''></audio><br/>" + textContent;
+    var audiomark = L.marker(activeMarker.getLatLng()).bindPopup(popupContent).addTo(map);
+    bindMarker(audiomark, doc["_id"]);
+    
+    map.removeLayer(activeMarker);
+    activeMarker = null;
   });
-*/
-
-  var doneMarker = L.marker([activeMarker.getLatLng().lat, activeMarker.getLatLng().lng])
-    .bindPopup(textContent)
-    .addTo(map);
-
-  map.closePopup();
-  map.removeLayer(activeMarker);
-  activeMarker = null;
-  
-  interviewMarkers.push(doneMarker);
 }
