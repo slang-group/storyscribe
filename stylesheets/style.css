@@ -8,7 +8,7 @@ html, body, #map{
   font-size: 11pt;
 }
 audio, video{
-  max-width: 100px;
+  max-width: 200px;
 }
 .tbox{
   background-color: #fff;

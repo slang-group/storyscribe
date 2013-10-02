@@ -48,6 +48,27 @@ function bindMarker(marker, docid){
     db.getAttachment(docid, 'audio', function(err, blob){
       $("audio")[0].src = window.URL.createObjectURL(blob);
     });
+    setTimeout(function(){
+      $("#notes").ime();
+      var audioTimeout = null;
+      $("#notes").on('keyup', function(e){
+        $("audio")[0].pause();
+        if(audioTimeout){
+          clearTimeout(audioTimeout);
+        }
+        audioTimeout = setTimeout(function(){
+          $("audio")[0].play();
+        }, 1200);
+      });
+      $("#notes").on('keydown', function(e){
+        $("audio")[0].pause();
+        if(audioTimeout){
+          clearTimeout(audioTimeout);
+        }
+        audioTimeout = null;
+      });
+      
+    }, 300);
   });
 }
 
