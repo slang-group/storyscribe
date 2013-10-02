@@ -32,16 +32,33 @@ db.allDocs({include_docs: true}, function(err, response){
 // click to place marker
 var activeMarker = null;
 var interviewMarkers = [ ];
+var popupTxt = "Transcribe me<br/>";
+popupTxt += "<textarea id='notes' rows='8' cols='30'></textarea><br/><br/>"
+popupTxt += "<a class='btn savebtn' href='#' onclick='saveText()'>Save</a>";
 map.on('click', function(e){
-  activeMarker = L.marker(e.latlng).addTo(map);
-  activeMarker.bindPopup("Transcribe me<br/><textarea id='notes' rows='8' cols='30'></textarea><br/><br/>");
-  activeMarker.openPopup();
+  activeMarker = L.marker(e.latlng)
+    .bindPopup(popupTxt)
+    .addTo(map)
+    .openPopup();
   $("#notes").ime();
-  
+});
+
+function saveText(){
+  var textContent = $("#notes").val();
   db.post({
-    latlng: [e.latlng.lat, e.latlng.lng],
-    content: "Recorded"
+    latlng: [activeMarker.getLatLng().lat, activeMarker.getLatLng().lng],
+    content: textContent
   }, function(err, response){
     console.log(err || response);
   });
-});
+  
+  var doneMarker = L.marker([activeMarker.getLatLng().lat, activeMarker.getLatLng().lng])
+    .bindPopup(textContent)
+    .addTo(map);
+
+  map.closePopup();
+  map.removeLayer(activeMarker);
+  activeMarker = null;
+  
+  interviewMarkers.push(doneMarker);
+}
