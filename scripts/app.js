@@ -22,6 +22,7 @@ function checkTileMill(){
 var welcome = "<h2>StoryScribe</h2>"
 welcome += "<p>Project to record stories in the field</p>";
 welcome += "<ul>";
+welcome += "<li>Click the map to add a point!</li>";
 welcome += "<li>Store locally, upload later</li>";
 welcome += "<li>Transcribe into any language</li>";
 welcome += "<li><label><input id='tilemilled' type='checkbox' onchange='checkTileMill()'>TileMill offline (when checked)</label></li>";
