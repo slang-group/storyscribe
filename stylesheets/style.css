@@ -7,6 +7,9 @@ html, body, #map{
   font-family: sans-serif;
   font-size: 11pt;
 }
+audio, video{
+  max-width: 100px;
+}
 .tbox{
   background-color: #fff;
   padding: 15px;

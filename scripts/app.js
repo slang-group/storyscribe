@@ -9,6 +9,10 @@ welcome += "</ul>";
 welcome += "<a href='#' class='btn' onclick='TINY.box.hide()'>Start &gt;</a>";
 TINY.box.show({ html:welcome,animate:true,close:true,mask:true,boxid:'welcome'});
 
+// getUserMedia compatibility
+window.URL = window.URL || window.webkitURL;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
 // Leaflet map
 var map = L.map('map').setView([ 42.334929, -71.017996 ], 16);
 map.attributionControl.setPrefix('');
@@ -25,16 +29,36 @@ db.allDocs({include_docs: true}, function(err, response){
     return console.log(err);
   }
   for(var r=0;r<response.rows.length;r++){
-    L.marker(response.rows[r].doc.latlng).bindPopup(response.rows[r].doc.content).addTo(map);
+    var popupContent = response.rows[r].doc.content;
+    if(response.rows[r].doc._attachments && response.rows[r].doc._attachments.audio){
+      popupContent += "<audio controls='controls' src=''></audio><br/>";
+      var audiomark = L.marker(response.rows[r].doc.latlng).bindPopup(popupContent).addTo(map);
+      bindMarker(audiomark, response.rows[r].doc._id);
+    }
+    else{
+      L.marker(response.rows[r].doc.latlng).bindPopup(popupContent).addTo(map);
+    }
   }
 });
+
+function bindMarker(marker, docid){
+  console.log(docid);
+  marker.on('click', function(e){
+    db.getAttachment(docid, 'audio', function(err, blob){
+      $("audio")[0].src = window.URL.createObjectURL(blob);
+    });
+  });
+}
 
 // click to place marker
 var activeMarker = null;
 var interviewMarkers = [ ];
-var popupTxt = "Transcribe me<br/>";
-popupTxt += "<textarea id='notes' rows='8' cols='30'></textarea><br/><br/>"
-popupTxt += "<a class='btn savebtn' href='#' onclick='saveText()'>Save</a>";
+var mainstream = null;
+var recorder = null;
+
+var popupTxt = "Record me<br/>";
+popupTxt += "<audio controls='controls'></audio><br/>";
+popupTxt += "<a class='btn savebtn recordbtn' href='#' onclick='toggleRecord()'>Record</a>";
 map.on('click', function(e){
   activeMarker = L.marker(e.latlng)
     .bindPopup(popupTxt)
@@ -43,15 +67,67 @@ map.on('click', function(e){
   $("#notes").ime();
 });
 
+var recording = false;
+function toggleRecord(){
+  recording = !recording;
+  if(!recording){
+    $(".recordbtn").text("Record");
+    recorder.stop();
+    mainstream.stop();
+    recorder.exportWAV(function(wavaudio) {
+      $("audio")[0].src = window.URL.createObjectURL(wavaudio);
+      var saveMarker = {
+        latlng: [activeMarker.getLatLng().lat, activeMarker.getLatLng().lng],
+        content: ""
+      };
+      db.post(saveMarker, function(err, response){
+        if(err){
+          return console.log(err);
+        }
+        console.log(response.id);
+        db.putAttachment(response.id, 'audio', response.rev, wavaudio, 'audio/wav', function(err, response){
+          console.log( err || response );
+        });
+      });
+    });
+  }
+  else{
+    $(".recordbtn").text("Stop");
+    
+    var audio = $('audio')[0];
+    if(navigator.getUserMedia){
+      navigator.getUserMedia({audio: true, video: false}, function(stream){
+        mainstream = stream;
+        //audio.src = window.URL.createObjectURL(stream);
+        var context = new webkitAudioContext();
+        var mediaStreamSource = context.createMediaStreamSource(stream);
+        recorder = new Recorder(mediaStreamSource);
+        recorder.record();
+      }, function(err){
+        console.log(err);
+      });
+    }
+    else{
+      console.log('no user media');
+    }
+  }
+}
+
+var transcribeTxt = "Transcribe me<br/>";
+transcribeTxt += "<textarea id='notes' rows='8' cols='30'></textarea><br/><br/>"
+transcribeTxt += "<a class='btn savebtn' href='#' onclick='saveText()'>Save</a>";
+
 function saveText(){
   var textContent = $("#notes").val();
+/*
   db.post({
     latlng: [activeMarker.getLatLng().lat, activeMarker.getLatLng().lng],
     content: textContent
   }, function(err, response){
     console.log(err || response);
   });
-  
+*/
+
   var doneMarker = L.marker([activeMarker.getLatLng().lat, activeMarker.getLatLng().lng])
     .bindPopup(textContent)
     .addTo(map);
