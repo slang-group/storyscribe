@@ -136,7 +136,7 @@ function saveText(){
     doc.content = textContent;
     db.put(doc);
     
-    var popupContent = "<audio controls='controls' src=''></audio><br/>" + textContent;
+    var popupContent = "<audio controls='controls' src=''></audio><br/>" + transcribeTxt(textContent);
     var audiomark = L.marker(activeMarker.getLatLng()).bindPopup(popupContent).addTo(map);
     bindMarker(audiomark, doc["_id"]);
     
