@@ -34,6 +34,13 @@ TINY.box.show({ html:welcome,animate:true,close:true,mask:true,boxid:'welcome'})
 // getUserMedia compatibility
 window.URL = window.URL || window.webkitURL;
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+var browserAudioContext;
+if(typeof AudioContext == "undefined"){
+  browserAudioContext = webkitAudioContext;
+}
+else{
+  browserAudioContext = AudioContext;
+}
 
 // Leaflet map
 var map = L.map('map').setView([ 42.334929, -71.017996 ], 16);
@@ -158,7 +165,7 @@ function toggleRecord(){
       navigator.getUserMedia({audio: true, video: false}, function(stream){
         mainstream = stream;
         //audio.src = window.URL.createObjectURL(stream);
-        var context = new webkitAudioContext();
+        var context = new browserAudioContext();
         var mediaStreamSource = context.createMediaStreamSource(stream);
         recorder = new Recorder(mediaStreamSource);
         recorder.record();
