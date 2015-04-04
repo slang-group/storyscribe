@@ -261,7 +261,7 @@
 		 */
 		position: function () {
 			var menuWidth, menuTop, menuLeft, elementPosition,
-				top, left, verticalRoom, overflowsOnRight,
+				top, left, cssTop, cssLeft, verticalRoom, overflowsOnRight,
 				imeSelector = this,
 				rtlElement = this.$element.css( 'direction' ) === 'rtl',
 				$window = $( window );
@@ -297,21 +297,24 @@
 				}
 			}
 
+			cssTop = top;
+			cssLeft = left;
 			this.$element.parents().each( function() {
 				if ( $( this ).css( 'position' ) === 'fixed' ) {
 					imeSelector.$imeSetting.css( 'position', 'fixed' );
-
+					cssTop -= $( document ).scrollTop();
+					cssLeft -= $( document ).scrollLeft();
 					return false;
 				}
 			} );
 
 			this.$imeSetting.css( {
-				top: top,
-				left: left
+				top: cssTop,
+				left: cssLeft
 			} );
 
 			menuWidth = this.$menu.width();
-			overflowsOnRight = ( left + menuWidth ) > $window.width();
+			overflowsOnRight = ( left - $( document ).scrollLeft() + menuWidth ) > $window.width();
 
 			// Adjust horizontal position if there's
 			// not enough space on any side
@@ -341,9 +344,14 @@
 		 * @return {string|bool} Selected input method id or false
 		 */
 		selectLanguage: function ( languageCode ) {
-			var ime = this.$element.data( 'ime' ),
-				imePref = $.ime.preferences.getIM( languageCode ),
-				language = $.ime.languages[languageCode];
+			var ime, imePref, language;
+
+			// consider language codes case insensitive
+			languageCode = languageCode && languageCode.toLowerCase();
+
+			ime = this.$element.data( 'ime' );
+			imePref = $.ime.preferences.getIM( languageCode );
+			language = $.ime.languages[languageCode];
 
 			this.setMenuTitle( this.getAutonym( languageCode ) );
 
@@ -381,7 +389,8 @@
 		 * @return {string} The autonym
 		 */
 		getAutonym: function ( languageCode ) {
-			return $.ime.languages[languageCode].autonym;
+			return $.ime.languages[languageCode]
+				&& $.ime.languages[languageCode].autonym;
 		},
 
 		/**
@@ -504,7 +513,7 @@
 				$languageItem = $( '<a>' )
 					.attr( 'href', '#' )
 					.text( this.getAutonym( languageCode ) )
-					.addClass( 'selectable-row-item' );
+					.addClass( 'selectable-row-item autonym' );
 				$language = $( '<li class="ime-lang selectable-row">' ).attr( 'lang', languageCode );
 				$language.append( $languageItem );
 				$languageList.append( $language );
@@ -531,8 +540,13 @@
 			$imeList.empty();
 
 			$.each( language.inputmethods, function ( index, inputmethod ) {
-				var $imeItem, $inputMethod,
-					name = $.ime.sources[inputmethod].name;
+				var $imeItem, $inputMethod, source, name;
+
+				source = $.ime.sources[inputmethod];
+				if ( !source ) {
+					return;
+				}
+				name = source.name;
 
 				$imeItem = $( '<a>' )
 					.attr( 'href', '#' )
@@ -607,7 +621,7 @@
 	}
 
 	function imeListTitle() {
-		return $( '<h3>' ).addClass( 'ime-list-title' );
+		return $( '<h3>' ).addClass( 'ime-list-title autonym' );
 	}
 
 	function toggleMenuItem() {
@@ -617,6 +631,7 @@
 					'class': 'ime-disable-link',
 					'data-i18n': 'jquery-ime-disable-text'
 				} )
+				.addClass( 'ime-checked' )
 				.text( 'System input method' ),
 			$( '<span>' )
 				.addClass( 'ime-disable-shortcut' )
@@ -683,7 +698,7 @@
 			} );
 		} else if ( isDOMAttrModifiedSupported() ) {
 			return this.on( 'DOMAttrModified', function ( e ) {
-				callback.call( this, e.attrName );
+				callback.call( this, e.originalEvent.attrName );
 			} );
 		} else if ( 'onpropertychange' in document.body ) {
 			return this.on( 'propertychange', function () {

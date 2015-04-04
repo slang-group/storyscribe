@@ -1,8 +1,13 @@
 ## StoryScribe
 
-A better tool to record and map field interviews
+A tool to map, record, and transcribe field interviews
 
-<img src="https://raw.github.com/mapmeld/storyscribe/gh-pages/screenshot.png"/>
+Click a point on the map to add an intervew point. Start recording using the
+browser, and stop recording to save the data locally.
+
+When you transcribe the interview, as soon as you start typing, the audio
+playback will pause until you resume typing. This allows you to transcribe
+bite-sized chunks at a time.
 
 ## Components
 

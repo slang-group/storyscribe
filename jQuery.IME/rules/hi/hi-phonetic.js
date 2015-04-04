@@ -3,7 +3,7 @@
 
 	var hiPhonetic = {
 		id: 'hi-phonetic',
-		name: 'phonetic',
+		name: 'फोनेटिक',
 		description: 'Phonetic keyboard for Hindi language',
 		date: '2013-02-09',
 		author: 'Parag Nemade',
@@ -12,14 +12,14 @@
 		patterns: [
 			['्f', '्\u200c'],
 			['\\~', 'ऎ'],
-			['\\`","ॆ'],
+			['\\`','ॆ'],
 			['\\!', 'ऍ'],
 			['1', '१'],
 			['\\@', 'ॅ'],
 			['2', '२'],
 			['\\#', 'ऑ'],
 			['3', '३'],
-			['\\$","ॉ'],
+			['\\$','ॉ'],
 			['4', '४'],
 			['\\%', 'ञ'],
 			['5', '५'],
